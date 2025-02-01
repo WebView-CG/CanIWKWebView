@@ -6,61 +6,68 @@
 //
 
 import SwiftUI
-import SwiftData
+import WebKit
 
-struct ContentView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+// MARK: - WebView (Tab 1)
+
+/// Diese SwiftUI-Wrapper-Struktur bettet einen WKWebView ein.
+struct WebViewTab: UIViewRepresentable {
+    let url: URL
+
+    // Erstellt den WKWebView und lädt die URL.
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView()
+        let request = URLRequest(url: url)
+        webView.load(request)
+        return webView
+    }
+
+    // Aktualisierungen am UIView (falls nötig).
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        // Hier kannst du den WebView bei Bedarf aktualisieren.
+    }
+}
+
+// MARK: - ConfigView (Tab 2)
+
+/// Diese Ansicht zeigt einfache Konfigurationseinstellungen.
+struct ConfigTab: View {
+    // Beispielhafte Zustandsvariablen für Toggle-Optionen
+    @State private var option1: Bool = true
+    @State private var option2: Bool = false
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
+        NavigationView {
+            Form {
+                Section(header: Text("Einstellungen")) {
+                    Toggle("Option 1", isOn: $option1)
+                    Toggle("Option 2", isOn: $option2)
                 }
             }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
+            .navigationTitle("Config")
         }
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+// MARK: - ContentView mit TabView
+
+/// Hauptansicht mit einem TabView, das zwei Tabs bereitstellt.
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            // Erster Tab: WebView
+            WebViewTab(url: URL(string: "https://caniwebview.com")!)
+                .tabItem {
+                    Image(systemName: "safari") // Symbol aus SF Symbols
+                    Text("WebView")
+                }
+            
+            // Zweiter Tab: Config
+            ConfigTab()
+                .tabItem {
+                    Image(systemName: "gear") // Symbol aus SF Symbols
+                    Text("Config")
+                }
+        }
+    }
 }
