@@ -17,6 +17,12 @@ struct WebViewTab: UIViewRepresentable {
     // Erstellt den WKWebView und lädt die URL.
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
+        
+        // TODO implement config
+        // Cordova https://github.com/apache/cordova-ios/blob/master/CordovaLib/Classes/Private/Plugins/CDVWebViewEngine/CDVWebViewEngine.m#L78
+        
+        
+        
         let request = URLRequest(url: url)
         webView.load(request)
         return webView
