@@ -16,13 +16,13 @@ struct WebViewTab: UIViewRepresentable {
 
     // Erstellt den WKWebView und lädt die URL.
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
+        let configuration = WKWebViewConfiguration()
+        configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
         
         // TODO implement config
         // Cordova https://github.com/apache/cordova-ios/blob/master/CordovaLib/Classes/Private/Plugins/CDVWebViewEngine/CDVWebViewEngine.m#L78
         
-        
-        
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         let request = URLRequest(url: url)
         webView.load(request)
         return webView
@@ -62,7 +62,7 @@ struct ContentView: View {
     var body: some View {
         TabView {
             // Erster Tab: WebView
-            WebViewTab(url: URL(string: "https://caniwebview.com")!)
+            WebViewTab(url: URL(string: "local://index.html")!)
                 .tabItem {
                     Image(systemName: "safari") // Symbol aus SF Symbols
                     Text("WebView")

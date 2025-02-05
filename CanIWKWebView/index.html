@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CanIWebView</title>
+</head>
+<body>
+    <h1>CanIWebView Test App</h1>
+    <p>This is a file served in the app by
+        <a href="https://developer.android.com/develop/ui/views/layout/webapps/load-local-content">
+            WebViewAssetLoader
+        </a>
+    </p>
+
+    <h2>Tools</h2>
+
+    <b>
+        <a href="https://caniwebview.com/app">Check out data on caniwebview.com</a>
+    </b>
+
+    <p>
+        <a href="https://mdn-bcd-collector.gooborg.com/">BCD Collector</a>
+    </p>
+
+    <button onclick="corsTestGet()">
+        CORS Test Request Get
+    </button>
+
+    <button onclick="corsTestGetCookie()">
+        CORS Test Request Send Cookie
+    </button>
+
+    <h3>Test</h3>
+    <div id="testresult"></div>
+
+    <script type="text/javascript">
+        // Set origin on result div on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const result = document.getElementById('testresult');
+            result.innerText = "Origin: " + window.location.origin;
+        });
+        
+        function corsTestGet() {
+            fetch('https://caniwebview.merz.workers.dev/?echo-origin',
+                {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+
+                    const result = document.getElementById('testresult');
+                    result.innerText = data;
+                })
+                .catch(error => {
+                    console.error(error);
+
+                    const result = document.getElementById('testresult');
+                    result.innerText = error;
+                });
+        }
+
+        function corsTestGetCookie() {
+            fetch('https://caniwebview.merz.workers.dev/?echo-origin',
+                {
+                    method: 'GET',
+                    mode: 'cors',
+                    credentials: 'include',
+                    headers: {
+                        'Cookie': 'test=android'
+                    }
+                })
+                .then(response => response.text())
+                .then(data => {
+                    console.log(data);
+
+                    const result = document.getElementById('testresult');
+                    result.innerText = data;
+                })
+                .catch(error => {
+                    console.error(error);
+
+                    const result = document.getElementById('testresult');
+                    result.innerText = error;
+                });
+        }
+    </script>
+</body>
