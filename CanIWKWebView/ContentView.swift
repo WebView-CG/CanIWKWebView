@@ -54,10 +54,9 @@ struct WebView: UIViewRepresentable {
     private let configuration = WKWebViewConfiguration()
     
     func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView(frame: .zero, configuration: configuration)
         configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
 
-        
+        let webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = context.coordinator
         return webView
     }
