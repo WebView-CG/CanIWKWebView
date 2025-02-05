@@ -10,36 +10,78 @@ import WebKit
 
 // MARK: - WebView (Tab 1)
 
-/// Diese SwiftUI-Wrapper-Struktur bettet einen WKWebView ein.
-struct WebViewTab: UIViewRepresentable {
-    let url: URL
-
-    // Erstellt den WKWebView und lädt die URL.
-    func makeUIView(context: Context) -> WKWebView {
-        let configuration = WKWebViewConfiguration()
-        configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
-        
-        // TODO implement config
-        // Cordova https://github.com/apache/cordova-ios/blob/master/CordovaLib/Classes/Private/Plugins/CDVWebViewEngine/CDVWebViewEngine.m#L78
-        
-        let webView = WKWebView(frame: .zero, configuration: configuration)
-        let request = URLRequest(url: url)
-        webView.load(request)
-        return webView
+struct WebViewTab: View {
+    @State private var urlInput = "local://index.html"
+    @State private var currentURL: URL
+    @State private var forceReload = UUID()  // Force view recreation
+    
+    init() {
+        _currentURL = State(initialValue: URL(string: "local://index.html")!)
     }
-
-    // Aktualisierungen am UIView (falls nötig).
-    func updateUIView(_ uiView: WKWebView, context: Context) {
-        // Hier kannst du den WebView bei Bedarf aktualisieren.
+    
+    var body: some View {
+        VStack {
+            HStack {
+                TextField("Enter URL", text: $urlInput)
+                    .textFieldStyle(.roundedBorder)
+                    .autocapitalization(.none)
+                
+                Button("Load") {
+                    guard let url = formatURL(urlInput) else {
+                        print("Invalid URL")
+                        return
+                    }
+                    currentURL = url
+                    forceReload = UUID()  // Trigger view recreation
+                }
+            }
+            .padding()
+            
+            WebView(url: $currentURL)
+                .id(forceReload)  // Force view recreation on URL change
+        }
+    }
+    
+    private func formatURL(_ input: String) -> URL? {
+        //let formatted = input.hasPrefix("http") ? input : "http://\(input)"
+        return URL(string: input)
     }
 }
 
+
+struct WebView: UIViewRepresentable {
+    @Binding var url: URL
+    private let configuration = WKWebViewConfiguration()
+    
+    func makeUIView(context: Context) -> WKWebView {
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
+
+        
+        webView.navigationDelegate = context.coordinator
+        return webView
+    }
+    
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        guard uiView.url != url else { return }
+        uiView.load(URLRequest(url: url))
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate {
+        var currentURL: URL?
+    }
+}
+
+
+
 // MARK: - ConfigView (Tab 2)
 
-/// Diese Ansicht zeigt einfache Konfigurationseinstellungen.
 struct ConfigTab: View {
-    // Beispielhafte Zustandsvariablen für Toggle-Optionen
-    @State private var option1: Bool = true
+   @State private var option1: Bool = true
     @State private var option2: Bool = false
 
     var body: some View {
@@ -55,23 +97,19 @@ struct ConfigTab: View {
     }
 }
 
-// MARK: - ContentView mit TabView
+// MARK: - TabView
 
-/// Hauptansicht mit einem TabView, das zwei Tabs bereitstellt.
 struct ContentView: View {
     var body: some View {
         TabView {
-            // Erster Tab: WebView
-            WebViewTab(url: URL(string: "local://index.html")!)
+            WebViewTab()
                 .tabItem {
-                    Image(systemName: "safari") // Symbol aus SF Symbols
+                    Image(systemName: "safari")
                     Text("WebView")
                 }
-            
-            // Zweiter Tab: Config
             ConfigTab()
                 .tabItem {
-                    Image(systemName: "gear") // Symbol aus SF Symbols
+                    Image(systemName: "gear")
                     Text("Config")
                 }
         }
