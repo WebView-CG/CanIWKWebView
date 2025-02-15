@@ -11,7 +11,6 @@ import WebKit
 // MARK: - WebView (Tab 1)
 
 struct WebViewTab: View {
-    @State private var urlInput = "local://index.html"
     @State private var currentURL: URL
     @State private var forceReload = UUID()  // Used to force view reload
     @State private var showFullScreen: Bool = false
@@ -25,12 +24,12 @@ struct WebViewTab: View {
     var body: some View {
         VStack {
             HStack {
-                TextField("Enter URL", text: $urlInput)
+                TextField("Enter URL", text: $settings.urlString)
                     .textFieldStyle(.roundedBorder)
                     .autocapitalization(.none)
                 
                 Button("Load") {
-                    guard let url = formatURL(urlInput) else {
+                    guard let url = URL(string: settings.urlString) else {
                         print("Invalid URL")
                         return
                     }
@@ -48,6 +47,8 @@ struct WebViewTab: View {
             if !settings.isFullscreen {
                 WebView(url: $currentURL)
                     .id(forceReload)
+            } else {
+                Text("Load in Fullscreen WebView")
             }
         }
         // Fullscreen cover for the web view.
@@ -55,9 +56,13 @@ struct WebViewTab: View {
             NavigationView {
                 WebView(url: $currentURL)
                     .edgesIgnoringSafeArea(.all)
-                    .navigationBarItems(trailing: Button("Done") {
-                        showFullScreen = false
-                    })
+                    .toolbar {
+                        ToolbarItem(placement: .bottomBar) {
+                            Button("Done") {
+                                showFullScreen = false
+                            }
+                        }
+                    }
             }
         }
     }
