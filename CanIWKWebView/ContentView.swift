@@ -13,7 +13,10 @@ import WebKit
 struct WebViewTab: View {
     @State private var urlInput = "local://index.html"
     @State private var currentURL: URL
-    @State private var forceReload = UUID()  // Force view recreation
+    @State private var forceReload = UUID()  // Used to force view reload
+    @State private var showFullScreen: Bool = false
+
+    @EnvironmentObject var settings: AppSettings
     
     init() {
         _currentURL = State(initialValue: URL(string: "local://index.html")!)
@@ -32,21 +35,39 @@ struct WebViewTab: View {
                         return
                     }
                     currentURL = url
-                    forceReload = UUID()  // Trigger view recreation
+                    if settings.isFullscreen {
+                        showFullScreen = true
+                    } else {
+                        forceReload = UUID()  // Reload inline WebView
+                    }
                 }
             }
             .padding()
             
-            WebView(url: $currentURL)
-                .id(forceReload)  // Force view recreation on URL change
+            // Only show inline WebView if not using fullscreen mode.
+            if !settings.isFullscreen {
+                WebView(url: $currentURL)
+                    .id(forceReload)
+            }
+        }
+        // Fullscreen cover for the web view.
+        .fullScreenCover(isPresented: $showFullScreen) {
+            NavigationView {
+                WebView(url: $currentURL)
+                    .edgesIgnoringSafeArea(.all)
+                    .navigationBarItems(trailing: Button("Done") {
+                        showFullScreen = false
+                    })
+            }
         }
     }
     
     private func formatURL(_ input: String) -> URL? {
-        //let formatted = input.hasPrefix("http") ? input : "http://\(input)"
         return URL(string: input)
     }
 }
+
+
 
 
 struct WebView: UIViewRepresentable {
@@ -80,15 +101,13 @@ struct WebView: UIViewRepresentable {
 // MARK: - ConfigView (Tab 2)
 
 struct ConfigTab: View {
-   @State private var option1: Bool = true
-    @State private var option2: Bool = false
+    @EnvironmentObject var settings: AppSettings
 
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Einstellungen")) {
-                    Toggle("Option 1", isOn: $option1)
-                    Toggle("Option 2", isOn: $option2)
+                Section(header: Text("General")) {
+                    Toggle("Fullscreen WebView", isOn: $settings.isFullscreen)
                 }
             }
             .navigationTitle("Config")
@@ -96,9 +115,12 @@ struct ConfigTab: View {
     }
 }
 
+
 // MARK: - TabView
 
 struct ContentView: View {
+    @StateObject var appSettings = AppSettings()
+    
     var body: some View {
         TabView {
             WebViewTab()
@@ -106,11 +128,14 @@ struct ContentView: View {
                     Image(systemName: "safari")
                     Text("WebView")
                 }
+                .environmentObject(appSettings)
             ConfigTab()
                 .tabItem {
                     Image(systemName: "gear")
                     Text("Config")
                 }
+                .environmentObject(appSettings)
         }
     }
 }
+
