@@ -1,89 +1,105 @@
+<!--
+  ~ Copyright (C) 2025 Webview Community Group
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>CanIWebView</title>
+    <title>CanIWebView Test App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <h1>CanIWebView Test App</h1>
-    <p>This is a file served in the app by
-        <a href="https://developer.apple.com/documentation/webkit/wkurlschemehandler">
-            WKURLSchemeHandler
-        </a>
-    </p>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <header class="header">
+        <h1>CanIWebView Test App</h1>
+    </header>
+    
+    <main id="main-content" class="container">
+        <section aria-labelledby="about-heading">
+            <h2 id="about-heading" class="sr-only">About</h2>
+            <p>This is a file served in the app by
+                <a href="https://developer.apple.com/documentation/webkit/wkurlschemehandlernope " 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   class="external-link"
+                   aria-describedby="external-link-desc">
+                    WKURLSchemeHandler
+                </a>
+                on
+            </p>
+            <p id="origin"></p>
+            <div id="external-link-desc" class="sr-only">Links open in the same WebView</div>
+        </section>
 
-    <h2>Tools</h2>
+        <section aria-labelledby="tools-heading">
+            <h2 id="tools-heading">Tools</h2>
+            <nav aria-label="Testing tools">
+                <a href="https://caniwebview.com/app" 
+                   class="tool-button external-link" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   aria-describedby="external-link-desc">
+                    CanIWebView compatibility data
+                </a>
+                <a href="https://mdn-bcd-collector.gooborg.com/" 
+                   class="tool-button external-link" 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   aria-describedby="external-link-desc">
+                    MDN Browser Compatibility Data Collector
+                </a>
+                <a href="edge.html" 
+                   class="tool-button"
+                   aria-describedby="internal-link-desc">
+                    Edge Safe Area Test
+                </a>
+                <a href="cookie.html" 
+                   class="tool-button"
+                   aria-describedby="internal-link-desc">
+                    Cookie Test
+                </a>
+            </nav>
+            <div id="internal-link-desc" class="sr-only">Links open in the same WebView</div>
+        </section>
 
-    <b>
-        <a href="https://caniwebview.com/app">Check out data on caniwebview.com</a>
-    </b>
-
-    <p>
-        <a href="https://mdn-bcd-collector.gooborg.com/">BCD Collector</a>
-    </p>
-
-    <button onclick="corsTestGet()">
-        CORS Test Request Get
-    </button>
-
-    <button onclick="corsTestGetCookie()">
-        CORS Test Request Send Cookie
-    </button>
-
-    <h3>Test</h3>
-    <div id="testresult"></div>
+        <section aria-labelledby="test-heading">
+            <h2 id="test-heading">Test</h2>
+            <h3 id="debug-heading">Debug data from the WebView</h3>
+            <div id="testresult" 
+                 role="status" 
+                 aria-live="polite" 
+                 aria-labelledby="debug-heading"
+                 aria-describedby="debug-description">
+            </div>
+            <div id="debug-description" class="sr-only">
+                This section displays the user agent string and origin URL of the current WebView
+            </div>
+        </section>
+    </main>
 
     <script type="text/javascript">
-        // Set origin on result div on load
+        // Set debug data on result div on load
         document.addEventListener('DOMContentLoaded', function() {
             const result = document.getElementById('testresult');
-            result.innerText = "Origin: " + window.location.origin;
-        });
-        
-        function corsTestGet() {
-            fetch('https://caniwebview.merz.workers.dev/?echo-origin',
-                {
-                    method: 'GET',
-                    mode: 'cors',
-                    credentials: 'include',
-                })
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-
-                    const result = document.getElementById('testresult');
-                    result.innerText = data;
-                })
-                .catch(error => {
-                    console.error(error);
-
-                    const result = document.getElementById('testresult');
-                    result.innerText = error;
-                });
-        }
-
-        function corsTestGetCookie() {
-            fetch('https://caniwebview.merz.workers.dev/?echo-origin',
-                {
-                    method: 'GET',
-                    mode: 'cors',
-                    credentials: 'include',
-                    headers: {
-                        'Cookie': 'test=android'
-                    }
-                })
-                .then(response => response.text())
-                .then(data => {
-                    console.log(data);
-
-                    const result = document.getElementById('testresult');
-                    result.innerText = data;
-                })
-                .catch(error => {
-                    console.error(error);
-
-                    const result = document.getElementById('testresult');
-                    result.innerText = error;
-                });
-        }
+            const originElement = document.getElementById('origin');
+            const origin = window.location.origin;
+            const ua = window.navigator.userAgent;
+            result.textContent = `User agent: ${ua}`;
+            originElement.textContent = origin
+        });        
     </script>
 </body>
