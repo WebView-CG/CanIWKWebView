@@ -11,6 +11,7 @@ import WebKit
 struct WebViewTab: View {
     @State private var currentURL: URL
     @State private var forceReload = UUID()  // Used to force view reload
+    @State private var showFullScreen: Bool = false
 
     @EnvironmentObject var settings: AppSettings
     
@@ -31,7 +32,11 @@ struct WebViewTab: View {
                         return
                     }
                     currentURL = url
-                    forceReload = UUID()  // Force reload to apply new settings
+                    if settings.isFullscreen {
+                        showFullScreen = true
+                    } else {
+                        forceReload = UUID()  // Reload inline WebView
+                    }
                 }
             }
             .padding()
@@ -41,24 +46,18 @@ struct WebViewTab: View {
                 WebView(url: $currentURL, settings: settings)
                     .id(forceReload)
             } else {
-                VStack {
-                    Text("Load in Fullscreen WebView")
-                    Button("Open Fullscreen") {
-                        forceReload = UUID()
-                    }
-                }
+                Text("Load in Fullscreen WebView")
             }
         }
         // Fullscreen cover for the web view.
-        .sheet(isPresented: $settings.isFullscreen) {
+        .fullScreenCover(isPresented: $showFullScreen) {
             NavigationView {
                 WebView(url: $currentURL, settings: settings)
-                    .id(forceReload)
                     .edgesIgnoringSafeArea(.all)
                     .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
+                        ToolbarItem(placement: .bottomBar) {
                             Button("Done") {
-                                settings.isFullscreen = false
+                                showFullScreen = false
                             }
                         }
                     }
