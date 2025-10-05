@@ -70,11 +70,38 @@ struct WebViewTab: View {
     }
 }
 
+#if os(macOS)
+struct WebView: NSViewRepresentable {
+    @Binding var url: URL
+    
+    func makeNSView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
+        configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
+
+        let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.navigationDelegate = context.coordinator
+        return webView
+    }
+    
+    func updateNSView(_ nsView: WKWebView, context: Context) {
+        guard nsView.url != url else { return }
+        nsView.load(URLRequest(url: url))
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+    
+    class Coordinator: NSObject, WKNavigationDelegate {
+        var currentURL: URL?
+    }
+}
+#else
 struct WebView: UIViewRepresentable {
     @Binding var url: URL
-    private let configuration = WKWebViewConfiguration()
     
     func makeUIView(context: Context) -> WKWebView {
+        let configuration = WKWebViewConfiguration()
         configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
 
         let webView = WKWebView(frame: .zero, configuration: configuration)
@@ -95,3 +122,4 @@ struct WebView: UIViewRepresentable {
         var currentURL: URL?
     }
 }
+#endif
