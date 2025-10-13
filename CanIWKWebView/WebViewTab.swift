@@ -87,6 +87,10 @@ struct WebView: UIViewRepresentable {
     @Binding var url: URL
     @ObservedObject var settings: AppSettings
     
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
     func makeUIView(context: Context) -> WKWebView {
         let configuration = WKWebViewConfiguration()
         configuration.setURLSchemeHandler(LocalFileSchemeHandler(), forURLScheme: "local")
@@ -127,6 +131,7 @@ struct WebView: UIViewRepresentable {
         }
         
         let webView = WKWebView(frame: .zero, configuration: configuration)
+        webView.uiDelegate = context.coordinator
         
         // Apply interaction settings
         webView.allowsLinkPreview = settings.allowsLinkPreview
@@ -163,5 +168,22 @@ struct WebView: UIViewRepresentable {
         // Load URL if changed
         guard uiView.url != url else { return }
         uiView.load(URLRequest(url: url))
+    }
+    
+    class Coordinator: NSObject, WKUIDelegate {
+        var parent: WebView
+        
+        init(_ parent: WebView) {
+            self.parent = parent
+        }
+        
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration, for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if let frame = navigationAction.targetFrame,
+                frame.isMainFrame {
+                return nil
+            }
+            webView.load(navigationAction.request)
+            return nil
+        }
     }
 }
