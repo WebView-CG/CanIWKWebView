@@ -38,6 +38,19 @@ struct WebViewTab: View {
                         forceReload = UUID()  // Reload inline WebView
                     }
                 }
+                
+                Button(action: {
+                    let homeURL = URL(string: "local://index.html")!
+                    settings.urlString = "local://index.html"
+                    currentURL = homeURL
+                    if settings.isFullscreen {
+                        showFullScreen = true
+                    } else {
+                        forceReload = UUID()  // Reload inline WebView
+                    }
+                }) {
+                    Image(systemName: "house.fill")
+                }
             }
             .padding()
             
@@ -114,8 +127,6 @@ struct WebView: UIViewRepresentable {
         }
         
         let webView = WKWebView(frame: .zero, configuration: configuration)
-        webView.navigationDelegate = context.coordinator
-        context.coordinator.settings = settings
         
         // Apply interaction settings
         webView.allowsLinkPreview = settings.allowsLinkPreview
@@ -130,9 +141,6 @@ struct WebView: UIViewRepresentable {
     }
     
     func updateUIView(_ uiView: WKWebView, context: Context) {
-        // Update coordinator settings reference
-        context.coordinator.settings = settings
-        
         // Update settings that can be changed dynamically
         uiView.configuration.preferences.javaScriptCanOpenWindowsAutomatically = settings.javaScriptCanOpenWindowsAutomatically
         uiView.configuration.preferences.minimumFontSize = settings.minimumFontSize
@@ -155,23 +163,5 @@ struct WebView: UIViewRepresentable {
         // Load URL if changed
         guard uiView.url != url else { return }
         uiView.load(URLRequest(url: url))
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator()
-    }
-    
-    class Coordinator: NSObject, WKNavigationDelegate {
-        var currentURL: URL?
-        var settings: AppSettings?
-        
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, preferences: WKWebpagePreferences, decisionHandler: @escaping (WKNavigationActionPolicy, WKWebpagePreferences) -> Void) {
-            // Apply JavaScript and content mode settings per navigation using modern API
-            if let settings = settings {
-                preferences.allowsContentJavaScript = settings.javaScriptEnabled
-                preferences.preferredContentMode = WKWebpagePreferences.ContentMode(rawValue: settings.preferredContentMode) ?? .recommended
-            }
-            decisionHandler(.allow, preferences)
-        }
     }
 }
