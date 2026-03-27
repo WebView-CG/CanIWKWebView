@@ -141,6 +141,13 @@ struct WebView: UIViewRepresentable {
         if !settings.customUserAgent.isEmpty {
             webView.customUserAgent = settings.customUserAgent
         }
+
+        // Enable inspectable web view in debug mode for testing and automations
+        #if DEBUG
+        if #available(iOS 16.4, *) {
+            webView.isInspectable = true
+        }
+        #endif
         
         return webView
     }
