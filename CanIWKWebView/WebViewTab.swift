@@ -125,6 +125,10 @@ struct WebView: UIViewRepresentable {
         configuration.limitsNavigationsToAppBoundDomains = settings.limitsNavigationsToAppBoundDomains
         configuration.upgradeKnownHostsToHTTPS = settings.upgradeKnownHostsToHTTPS
         
+        // Debug logging
+        print("🔒 limitsNavigationsToAppBoundDomains: \(settings.limitsNavigationsToAppBoundDomains)")
+        print("🌐 Loading URL: \(url.absoluteString)")
+        
         // User agent settings
         if !settings.applicationNameForUserAgent.isEmpty {
             configuration.applicationNameForUserAgent = settings.applicationNameForUserAgent

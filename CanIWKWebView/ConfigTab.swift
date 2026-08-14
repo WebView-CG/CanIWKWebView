@@ -55,7 +55,40 @@ struct ConfigTab: View {
             
             Section(header: Text("Security & Privacy")) {
                 Toggle("Fraudulent Website Warning", isOn: $settings.isFraudulentWebsiteWarningEnabled)
-                Toggle("Limit to App-Bound Domains", isOn: $settings.limitsNavigationsToAppBoundDomains)
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle("Limit to App-Bound Domains", isOn: $settings.limitsNavigationsToAppBoundDomains)
+                    if settings.limitsNavigationsToAppBoundDomains {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("ℹ️ Service Workers ENABLED (for app-bound domains only)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                            Text("Service Workers only work on HTTPS URLs from these domains: mdn-bcd-collector.gooborg.com, gooborg.com, collector.openwebdocs.org, caniwebview.com, echo.websocket.org.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(8)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(8)
+                    } else {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("⚠️ Service Workers NOT supported")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.orange)
+                            Text("Turn ON to enable Service Workers (only works for HTTPS domains listed in Info.plist)")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(8)
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                    }
+                }
+                
                 Toggle("Upgrade Known Hosts to HTTPS", isOn: $settings.upgradeKnownHostsToHTTPS)
             }
             
